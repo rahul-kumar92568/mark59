@@ -2,9 +2,11 @@
 
 Mark59 is a Java-based framework that enables integration of Selenium scripts within the Jmeter Performance Test tool, also extending reporting capabilities.
 
-## Early Release Notes
+## Early Release Notes (Mid July 2019) 
 
 This initial release will present the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
+
+The Mark59 core and selenium-implementation Java projects have now been included.  These are used to build the dependencies which enable a performance test script to use selenium.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the project artifacts are dependencies for scripting, they will be added to Maven Central (group id com.mark59).  As such detailed documention is not yet available (high on our priority list over the coming weeks), however the source already contains some detailed javadoc which could assist any 'early adopters'.   
 
 Samples of its use with Selenium within a performance test are planned for release shortly.    
 
@@ -18,6 +20,7 @@ Samples of its use with Selenium within a performance test are planned for relea
 
 ## Key Concepts
 
+- DataHunter is used as the 'sample application' for the install and testing of all other Mark59 artficats, as well as being useful in its own right.
 - DataHunter can hold key-value pairs of data.
 - Data can be held transiently (using a 'H2' database), or more permanently (using a MySQL database), depending on chosen implementation. 
 - Both synchronous and asynchronous data life-cycles have been catered for.
@@ -25,7 +28,7 @@ Samples of its use with Selenium within a performance test are planned for relea
 - DataHunter has been written as a Spring Boot application.  
 
 
-## How it works
+## How DataHunter works
 
 DataHunter is basically a set of simple data entry and usage screens.  As indicated above, the screens have deliberated kept minimal to maximise performance characteristics.
 
@@ -88,7 +91,7 @@ Other Data and Epoch Time can be optionally entered.
 	When using the H2 database, provides and SQL-style interface to the policy data. 
 
 
-## Quickstart
+## DataHuter Quickstart
 
 1. The following assumes you will be building the application in the Eclipse IDE, and have downloaded the repo on your Windows machine to C:\gitrepo\mark59.  You'll need to compensate within these instructions if you have done otherwise.     
 
