@@ -6,9 +6,19 @@ Mark59 is a Java-based framework that enables integration of Selenium scripts wi
 
 This initial release will present the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
 
-The Mark59 core and selenium-implementation Java projects have now been included.  These are used to build the dependencies which enable a performance test script to use selenium.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the project artifacts are dependencies for scripting, they will be added to Maven Central (group id com.mark59).  As such detailed documention is not yet available (high on our priority list over the coming weeks), however the source already contains some detailed javadoc which could assist any 'early adopters'.   
+The Mark59 core, selenium-implementation and sample Java projects have now been included.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the Mark59 core and selenium-implementation project artifacts are dependencies for scripting, they have been be added to the Maven Central Repository (group id com.mark59).  To write a script using Mark59, the dependency you need to add to your pom is:   
 
-Samples of its use with Selenium within a performance test are planned for release shortly.    
+	<dependency>
+	  <groupId>com.mark59</groupId>
+	  <artifactId>mark59-selenium-implementation</artifactId>
+	  <version>1.0-beta-1</version>
+	</dependency>
+
+The dataHunterPVTest project contains an example of a Jmeter/Selenium script using the mark59 framework. See the Mark59 Scripting Quickstart section below.     
+
+Detailed documention is now being produced (high on our priority list over the coming weeks), however the source already contains detailed javadoc which should assist any 'early adopters'.   
+
+Extended reporting capabilities coming soon..    
 
 ## Terminologies
 
@@ -98,6 +108,40 @@ Other Data and Epoch Time can be optionally entered.
 2. Building the dataHunter application.
     1. In Eclipse, Import Existing Maven Project, from C:\gitrepo\mark59.  dataHunter/pom.xml should be the pom you need to select.
     2. Before you do the Maven build, check your Maven settings.xml file is correct (only applies to a corporate site where a Maven 'proxy' such a Nexus may be in use).
-	3. Maven build with goals: clean package 
-	4. To start the application in 'default' mode, follow the steps outlined in the file DataHunterStartFromMavenTarget.bat  (on the project root)
+    3. Maven build with goals: clean package 
+    4. To start the application in 'default' mode, follow the steps outlined in the file DataHunterStartFromMavenTarget.bat  (on the project root)
 	
+## Mark59 Scripting Quickstart
+
+More detailed documentation to follow, however the basic idea can be seen using the dataHunterPVTest project. Windows is assumed, so you'll need to compensate for other systems:
+
+- The sample test uses DataHunter, so you need to install DataHunter locally (see 'DataHunter Quickstart' above).
+
+- Import dataHunterPVTest into Eclipse (as 'existing maven project') 
+
+
+The 'mark59' sample script can be found at:
+
+    com.mark59.datahunter.pvtest.performanceScripts.DataHunterLifecyclePvtScript
+    
+- Try to execute this script in Eclipse ('Run As - Java Application').  Even if the setup is all good, it is possible you will get a failure due to a mismatch of the Selenium Chromedriver and the version of Chrome on your machine.  If so, you can replace 'chromedriver.exe' in the project root with a compatible version (see http://chromedriver.chromium.org/downloads)
+
+To run in Jmeter: 
+
+- Build the project using Maven goals 'clean package'.  This will create a target jar of dataHunterPVTest.jar 
+
+- (optional) Import and build project mark59-server-metrics.  This will create a target jar of mark59-server-metrics.jar
+
+- Install a clean version of the current Jmeter release (5.1.1 at time of writing)
+
+- copy mark59.properties and chromedriver.exe from the project root into the Jmeter /bin directory
+
+- copy dataHunterPVTest.jar and (optional) mark59-server-metrics.jar into the Jmeter /lib/ext directory
+
+- start Jmeter, and open test plan in the dataHunterPVTest project at \test-plans\DataHunterSeleniumApiTestPlan.jmx.  You will need to delete the ServerUtil_localhost Thread Group if you have not copied mark59-server-metrics.jar into lib/ext.
+
+- Run!  You can see the progress in the View Results Tree listener.   Note: don't get stressed if you see some DataHunterLifeCycle results go red (failure).  The transaction 'DH-lifecycle-0299-sometimes-I-fail' has been deliberately set to randomly fail 25% of the time.
+
+- Report generation coming soon.. 
+
+
