@@ -6,7 +6,7 @@ Mark59 is a Java-based framework that enables integration of Selenium scripts wi
 
 This initial release will present the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
 
-The Mark59 core, selenium-implementation and sample Java projects have now been included.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the Mark59 core and selenium-implementation project artifacts are dependencies for scripting, they have been be added to the Maven Central Repository (group id com.mark59).  To write a script using Mark59, the dependency you need to add to your pom is:   
+The Mark59 core, selenium-implementation and sample Java projects have now been included.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the Mark59 core and selenium-implementation project artifacts are dependencies for scripting, they have been added to the Maven Central Repository (group id com.mark59).  To write a script using Mark59, the dependency you need to add to your pom is:   
 
 	<dependency>
 	  <groupId>com.mark59</groupId>
@@ -94,7 +94,9 @@ Other Data and Epoch Time can be optionally entered.
 
 	Displays the state of asynchronous messages with the application. 
 
-	- Early Release Note:  a detailed example of asynchronous message processing will be provided shorty.  
+	Sample usage is provided in the dataHunterPVTest project, see method asyncLifeCycleTest() in the functional test script:
+	
+	    com.mark59.datahunter.pvtest.functionalTest.DataHunterSeleniumApiTest  
 
 13. H2 Database Console 
 
