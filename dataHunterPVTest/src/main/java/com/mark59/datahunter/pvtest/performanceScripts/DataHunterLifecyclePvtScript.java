@@ -69,7 +69,7 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_APPLICATION_ID, TestConstants.DATAHUNTER_PV_TEST);
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"50");
 		jmeterAdditionalParameters.put("DRIVER", "CHROME");
-		jmeterAdditionalParameters.put(SeleniumDriverFactory.HEADLESS_MODE, String.valueOf(true));
+		jmeterAdditionalParameters.put(SeleniumDriverFactory.HEADLESS_MODE, String.valueOf(false));
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.PAGE_LOAD_STRATEGY, PageLoadStrategy.NORMAL.toString());
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.PROXY, "");
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.ADDITIONAL_OPTIONS, "");
