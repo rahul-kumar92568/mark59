@@ -111,6 +111,11 @@ public class JmeterFunctionsImpl implements JmeterFunctions {
 	 * Note from Jmeter 5.0 a call to set the end time of the main transaction is called as each  
 	 * sub-result ends, so a call to the sampleEnd() method only needs to be made if no subResult 
 	 * has already set the main transaction end time 
+	 * 
+	 * A data type to indicate this is a main result (normally expected to have sub-results) produced
+	 * using the mark59 framework is set (can be used to separate results from sub-results, particularly
+	 * when output is in CSV format).  
+	 * 
 	 */
 	private void tearDownMainResult(Outcome outcome) {
 		if (mainResult.getEndTime() == 0) {
@@ -119,6 +124,8 @@ public class JmeterFunctionsImpl implements JmeterFunctions {
 		mainResult.setSuccessful(outcome.isOutcomeSuccess());
 		mainResult.setResponseMessage(outcome.getOutcomeText());
 		mainResult.setResponseCode(outcome.getOutcomeResponseCode()); // 200 code
+		
+		mainResult.setDataType(OutputDatatypes.PARENT.getOutputDatatypeText() );
 	}
 	
 

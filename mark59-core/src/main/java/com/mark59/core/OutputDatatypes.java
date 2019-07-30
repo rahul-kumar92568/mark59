@@ -26,7 +26,8 @@ public enum OutputDatatypes {
 	DATAPOINT 	("DATAPOINT"),
 	CPU_UTIL 	("CPU_UTIL"),
 	MEMORY 		("MEMORY"),
-	TRANSACTION ("");
+	TRANSACTION (""),
+	PARENT 		("PARENT");
 	
 	private String outputDatatypeText;
 	
@@ -37,7 +38,5 @@ public enum OutputDatatypes {
 	public String getOutputDatatypeText() {
 		return outputDatatypeText;
 	}
-
 	
 }
-

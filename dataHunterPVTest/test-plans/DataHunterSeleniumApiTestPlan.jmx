@@ -240,7 +240,7 @@ OUT.println (&quot;------------------------------------------------------------&
               </elementProp>
               <elementProp name="ALTERNATE SERVER ID" elementType="Argument">
                 <stringProp name="Argument.name">ALTERNATE SERVER ID</stringProp>
-                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.value">HOSTID</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="CONNECTION PORT" elementType="Argument">
@@ -314,7 +314,7 @@ OUT.println (&quot;------------------------------------------------------------&
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report xml" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -329,7 +329,7 @@ OUT.println (&quot;------------------------------------------------------------&
             <threadName>true</threadName>
             <dataType>true</dataType>
             <encoding>false</encoding>
-            <assertions>false</assertions>
+            <assertions>true</assertions>
             <subresults>true</subresults>
             <responseData>false</responseData>
             <samplerData>false</samplerData>
@@ -342,12 +342,51 @@ OUT.println (&quot;------------------------------------------------------------&
             <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
             <sentBytes>true</sentBytes>
+            <url>true</url>
             <threadCounts>true</threadCounts>
             <idleTime>true</idleTime>
             <connectTime>true</connectTime>
           </value>
         </objProp>
+        <stringProp name="TestPlan.comments">produces &apos;standard&apos; xml results</stringProp>
         <stringProp name="filename">C:\Jmeter_Results\DataHunter\DataHunterTestResults.xml</stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report csv" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">C:\Jmeter_Results\DataHunter\DataHunterTestResults.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>

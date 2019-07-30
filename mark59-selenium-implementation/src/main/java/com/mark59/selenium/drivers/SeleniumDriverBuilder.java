@@ -206,7 +206,10 @@ public abstract class SeleniumDriverBuilder<O extends MutableCapabilities>
 	 * for the SeleniumAbstractJavaSamplerClient based test script can be entered as : 
 	 * <br><br> <b> --proxy-pac-url=http://myawesomecompany.corp/proxy.pac,--disable-extensions</b> </p>
 	 * 
-	 * <p>Note that a proxy override can be set using the "PROXY" parameter, just shown here as an example.</p>   
+	 * <p>(note that a proxy override can be set using the "PROXY" parameter, just shown here as an example)<br>  
+	 *  
+	 * Another example would be to run Chrome in incognito mode, set the "ADDITIONAL OPTIONS" parameter as : 
+	 * <br><br> <b> --incognito</b> </p>
 	 * 
 	 * @see org.openqa.selenium.chrome.ChromeOptions#addArguments(java.util.List)
 	 * @see SeleniumAbstractJavaSamplerClient
