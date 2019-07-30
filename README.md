@@ -2,7 +2,7 @@
 
 Mark59 is a Java-based framework that enables integration of Selenium scripts within the Jmeter Performance Test tool, also extending reporting capabilities.
 
-## Early Release Notes (Mid July 2019) 
+## Early Release Notes (Aug 2019) 
 
 This initial release will present the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
 
@@ -11,14 +11,14 @@ The Mark59 core, selenium-implementation and sample Java projects have now been 
 	<dependency>
 	  <groupId>com.mark59</groupId>
 	  <artifactId>mark59-selenium-implementation</artifactId>
-	  <version>1.0-beta-1</version>
+	  <version>1.0-beta-2</version>
 	</dependency>
 
 The dataHunterPVTest project contains an example of a Jmeter/Selenium script using the mark59 framework. See the Mark59 Scripting Quickstart section below.     
 
 Detailed documention is now being produced (high on our priority list over the coming weeks), however the source already contains detailed javadoc which should assist any 'early adopters'.   
 
-Extended reporting capabilities coming soon..    
+Beta-2 Maven Central release allows for CSV summary output files to be used in extended reporting (coming soon..)
 
 ## Terminologies
 
