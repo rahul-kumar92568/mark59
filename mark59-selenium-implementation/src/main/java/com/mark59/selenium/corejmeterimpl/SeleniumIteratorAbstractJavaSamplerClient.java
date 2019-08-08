@@ -36,15 +36,42 @@ import com.mark59.selenium.drivers.SeleniumDriverFactory;
 /**
  * Selenium flavoured extension of the Jmeter Java Sampler AbstractJavaSamplerClient.
  * 
- * <p>A core class of the mark59 Selenium implementation, and should be extended when  
- * creating Jmeter-ready selenium script. 
+ * <p>This particular class extends the base Mark59 implementation of the AbstractJavaSamplerClient in Mark59, SeleniumAbstractJavaSamplerClient. 
  * 
- * <p>Implementation of abstract method runSeleniumTest should contain the test, with
- * parameterisation handled by additionalTestParameters.  See the 'DataHunter' sample provided for
- * implementation details 
- *      
- * <p>Includes a number of standard parameters expected for a Selenium WebDriver.</p>
+ * <p>The extra functionality it provides gives the ability to perform a 'inital' action (eg, a logon), iterate (eg, repeatedly perform an 
+ * application workflow of some kind), and at the end, which can be determined by a count of iterations and/or a time setting, do a 'finalize' action (eg logoff).
+ * 
+ * The parameters from SeleniumAbstractJavaSamplerClient are available, plus these additions to control pacing and flow:
+ * <ul> 
+ * <li> <b>ITERATE_FOR_PERIOD_IN_SECS.</b> at the end of each iteration, a check is made to see if the time the script has reached this value in seconds.
+ *   If so, the finalize is executed and the script completed.  Must be a non-zero numneric to be active
+ * <li> <b>ITERATE_FOR_NUMBER_OF_TIMES.</b> at the end of each iteration, a check is made to see if the time the number of iterations has reached this value.
+ *  If so, the finalize is executed and the script completed.  Must be a non-zero numneric to be active
+ * <li> <b>ITERATION_PACING_IN_SECS.</b> the target length of time each iteration.  A thread delay calculated at the end of the iteration to force the iteration to the iteration pacing time.  
+ *   Must be a non-zero numneric to be active  
+ * <li> <b>STOP_THREAD_ON_FAILURE.</b> by default the script thread will re-start of failure (timers permitting).  This flag can be set to <b>true</b> to force the thread to stop for the rest of the test.  
+ * </ul>
+ *     
+ * <p>Note that if neither <b>ITERATE_FOR_PERIOD_IN_SECS</b> or <b>ITERATE_FOR_NUMBER_OF_TIMES</b> is set, the thread will be stopped (a message giving the reason is logged).  
+ * If BOTH are set, the iteration looping ends when the first condition is met. 
  *
+ * <p>
+ * <b>A simple example:</b><br>  
+ *---------------------<br>
+ *
+ *Say the settings are:<br>
+ * ITERATE_FOR_PERIOD_IN_SECS =	25<br>
+ * ITERATE_FOR_NUMBER_OF_TIMES = blank<br>
+ * ITERATION_PACING_IN_SECS = 10<br> 
+ * STOP_THREAD_ON_FAILURE = false<br>
+ * <p>
+ *Then each iteration will take 10 seconds (unless the script execution goes over 10 secs - in which case the next iteration will start immediately provided iterations started more than 25 secs ago).
+ *After the 3rd iteration, the script would of been iterating for 30 seconds.  The total period of iteration is 25 secs, so the finalize will be performed and the script completes.
+ *Assuming no other timers in the thread group, the script will then finish executing if the Thread Group Count or Scheduler conditions have been met, or otherwise restart again (even if a 
+ *failure occurred during the script execution).    
+ *
+ * @see SeleniumAbstractJavaSamplerClient
+ * 
  * @author Philip Webb
  * Written: Australian Winter 2019  
  */
@@ -126,7 +153,7 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 			Integer iterateNumberOfTimes = convertToInteger(context.getParameter(ITERATE_FOR_NUMBER_OF_TIMES));
 			Long iterationPacingMs       = convertToLong(ITERATION_PACING_IN_SECS, context.getParameter(ITERATION_PACING_IN_SECS),0L) * 1000;
 			long scriptIterationStartTimeMs;
-			long delay;
+			long delay = 0;
 			
 			if (LOG.isDebugEnabled()) LOG.debug(thread + ": tgName = " + tgName + ", scriptStartTimeMs = " + scriptStartTimeMs + ", iteratePeriodMs = " + iterateForPeriodMs + ", iterateNumberOfTimes = " + iterateNumberOfTimes );
 		
@@ -144,11 +171,13 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 				
 				iterateSeleniumTest(context, jm, driver);
 				
-				delay =	iterationPacingMs + scriptIterationStartTimeMs - System.currentTimeMillis();
-			    if (delay < 0){
-			         LOG.info("  script execution time exceeded pacing by  : " + (0-delay) + " ms."  );
-			         delay = 0;
-			    }
+				if (iterationPacingMs > 0) {
+					delay =	iterationPacingMs + scriptIterationStartTimeMs - System.currentTimeMillis();
+				    if (delay < 0){
+				         LOG.info("  script execution time exceeded pacing by  : " + (0-delay) + " ms."  );
+				         delay = 0;
+				    }
+				}
 		        LOG.debug("<<  iterateSeleniumTest - script execution sleeping for : " + delay + " ms."  );
 			    Thread.sleep(delay);
 			}

@@ -54,7 +54,7 @@ public class ChromeDriverBuilder extends SeleniumDriverBuilder<ChromeOptions> {
 		options.addArguments("--disable-gpu");
 		options.addArguments("--disable-gpu-sandbox");	
 		
-		//workaround for Chrome 76, (hopefully not needed when Selium v4 releases)
+		//workaround for Chrome 76 ?
 		// https://stackoverflow.com/questions/56558361/driver-manage-logs-getloglogtype-browser-no-longer-working-in-chromedriver-v/56596616#56596616
 		// https://stackoverflow.com/questions/56507652/selenium-chrome-cant-see-browser-logs-invalidargumentexception
 		options.setExperimentalOption("w3c", false);

@@ -99,7 +99,7 @@ vars.put(&quot;interation_start_time_ms&quot;, &quot;&quot; + System.currentTime
 vars.put(&quot;last_delay_ms&quot;, &quot;&quot; + delay );
 
 //System.out.println(&quot;    set interation_start_time_ms to : &quot; + vars.get(&quot;interation_start_time_ms&quot;) + &quot;  -  &quot; + (new Date(Long.valueOf(vars.get(&quot;interation_start_time_ms&quot;))).toString()));
-System.out.println(&quot;    pausing for calculated delay of &quot; + delay + &quot; ms&quot;  );
+//System.out.println(&quot;    pausing for calculated delay of &quot; + delay + &quot; ms&quot;  );
 return delay;</stringProp>
           <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223Timer>
