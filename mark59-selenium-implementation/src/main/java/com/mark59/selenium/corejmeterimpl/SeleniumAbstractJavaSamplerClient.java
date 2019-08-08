@@ -28,6 +28,7 @@ import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jmeter.threads.AbstractThreadGroup;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.PageLoadStrategy;
@@ -61,18 +62,17 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 
 	public static Logger LOG = Logger.getLogger(SeleniumAbstractJavaSamplerClient.class);	
 	
-	public static final String LOG_SCREENSHOTS_AT_START_OF_TRANSACTIONS = "Log_Screenshots_At_Start_Of_Transactions";	
-	
 	protected Arguments jmeterArguments = new Arguments();
-
 	protected JmeterFunctionsForSeleniumScripts jm;	
 	protected SeleniumDriverWrapper seleniumDriverWrapper; 
 	protected WebDriver driver;
-
 	private KeepBrowserOpen keepBrowserOpen = KeepBrowserOpen.NEVER;
 
+	protected String thread = Thread.currentThread().getName();
+	protected String tgName = null; 
+	protected AbstractThreadGroup tg = null;
 	
-	private static final Map<String,String> defaultArgumentsMap; 	
+	protected static final Map<String,String> defaultArgumentsMap; 	
 	static {
 		Map<String,String> staticMap = new LinkedHashMap<String,String>();
 		
@@ -150,13 +150,19 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	 */
 	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
+		if (LOG.isDebugEnabled()) LOG.debug(this.getClass().getName() +  " : exectuing runTest" );
+
+		if ( context.getJMeterContext() != null  && context.getJMeterContext().getThreadGroup() != null ) {
+			tg     = context.getJMeterContext().getThreadGroup();
+			tgName = tg.getName();
+		}
 		
 		if (IpUtilities.localIPisNotOnListOfIPaddresses(context.getParameter(IpUtilities.RESTRICT_TO_ONLY_RUN_ON_IPS_LIST))){ 
+			LOG.info("Thread Group " + tgName + " is stopping (not on 'Restrict to IP List')" );
+			if (tg!=null) tg.stop();
 			return null;
 		}
 	
-		if (LOG.isDebugEnabled()) LOG.debug(this.getClass().getName() +  " : exectuing runTest" );
-		
 		Map<String,String> jmeterRuntimeArgumentsMap = convertJmeterArgumentsToMap(context);
 		
 		seleniumDriverWrapper = new SeleniumDriverFactory().makeDriverWrapper(jmeterRuntimeArgumentsMap) ;
@@ -174,23 +180,9 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 		
 			LOG.debug("<< finished test" );
 
-		}	catch (Exception | AssertionError e) {
-
-			System.err.println("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown.  See log and screenshot directory for details.  Stack trace:");
-			e.printStackTrace();
-			LOG.error("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown",  e);
-			
-			jm.failTest();
-			jm.tearDown();
-			
-			Exception x = new Exception(e);
-			seleniumDriverWrapper.documentExceptionState(x);
-			
-			if (keepBrowserOpen.equals(KeepBrowserOpen.ONFAILURE)){
-				// force browser to stay open
-				keepBrowserOpen = KeepBrowserOpen.ALWAYS;   
-			}
-			
+		} catch (Exception | AssertionError e) {
+			scriptExceptionHandling(e);
+		
 		} finally {
 			if (! keepBrowserOpen.equals(KeepBrowserOpen.ALWAYS )     ) { 
 				seleniumDriverWrapper.driverDispose();
@@ -199,13 +191,35 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 		return jm.getMainResult();
 	}
 
+
+	/**
+	 * Log and record this script execution as a failure
+	 * @param e can be an exception or Assertion error
+	 */
+	protected void scriptExceptionHandling(Throwable e) {
+		System.err.println("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown.  See log and screenshot directory for details.  Stack trace:");
+		e.printStackTrace();
+		LOG.error("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown",  e);
+		
+		jm.failTest();
+		jm.tearDown();
+		
+		Exception x = new Exception(e);
+		seleniumDriverWrapper.documentExceptionState(x);
+		
+		if (keepBrowserOpen.equals(KeepBrowserOpen.ONFAILURE)){
+			// force browser to stay open
+			keepBrowserOpen = KeepBrowserOpen.ALWAYS;   
+		}
+	}
+
 	
 	
 	protected abstract void runSeleniumTest(JavaSamplerContext context, JmeterFunctionsForSeleniumScripts jm, WebDriver driver);
 
 	
 	
-	private Map<String,String> convertJmeterArgumentsToMap(JavaSamplerContext context) {
+	protected Map<String,String> convertJmeterArgumentsToMap(JavaSamplerContext context) {
 		Map<String, String> jmeterArgumentsAsMap = new HashMap<>();
 		
 		for (Iterator<String> iterator = context.getParameterNamesIterator(); iterator.hasNext();) {
@@ -261,7 +275,7 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 		for (int i = 1; i <= numberOfThreads; i++) {
 			
 			new Thread(new SeleniumTestThread(this.getClass()), String.format("%03d", i)).start();
-			SafeSleep.sleep(threadStartGapMs);
+			if (i<numberOfThreads)SafeSleep.sleep(threadStartGapMs);
 		}
 	}
 

@@ -62,21 +62,47 @@ OUT.println (&quot;------------------------------------------------------------&
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">3</stringProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
         <stringProp name="ThreadGroup.ramp_time">10</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(Duration,70)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer" enabled="true">
-          <intProp name="calcMode">0</intProp>
-          <doubleProp>
-            <name>throughput</name>
-            <value>3.0</value>
-            <savedValue>0.0</savedValue>
-          </doubleProp>
-        </ConstantThroughputTimer>
+        <JSR223Timer guiclass="TestBeanGUI" testclass="JSR223Timer" testname="Iteration Pacing Timer" enabled="true">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters">20</stringProp>
+          <stringProp name="script">// &quot;Iteration Pacing Timer&quot; - a recommended timing option for mark59 
+// Please put your target iteration time (delay + script run time) in seconds in the &quot;Parameters&quot; field above  
+
+long interation_pacing_ms = Long.valueOf(args[0]) * 1000; 
+long delay = 0;  
+String interation_start_time_ms_str = vars.get(&quot;interation_start_time_ms&quot;);
+//System.out.println(&quot;&gt;&gt;  delay calc - interation_pacing_ms         : &quot; + interation_pacing_ms );
+
+if (interation_start_time_ms_str != null) {
+
+//  System.out.println(&quot;               - (Prev) interation_start_time : &quot; + interation_start_time_ms_str  + &quot;  -  &quot; + (new Date(Long.valueOf(interation_start_time_ms_str)).toString()) );     
+//  System.out.println(&quot;               - last_delay_ms                : &quot; + Long.valueOf(vars.get(&quot;last_delay_ms&quot;)) ) ;
+//  System.out.println(&quot;               - approx curr                  : &quot; + System.currentTimeMillis() + &quot;  -  &quot; + (new Date(System.currentTimeMillis()).toString()));
+                                                                                                                                
+    delay = interation_pacing_ms + Long.valueOf(interation_start_time_ms_str) + Long.valueOf(vars.get(&quot;last_delay_ms&quot;)) - System.currentTimeMillis();
+
+    if (delay &lt; 0){
+         log.info(&quot;  script execution time exceeded pacing by  : &quot; + (0-delay) + &quot; ms.&quot;  );
+         delay = 0;
+    }
+}
+
+vars.put(&quot;interation_start_time_ms&quot;, &quot;&quot; + System.currentTimeMillis() );
+vars.put(&quot;last_delay_ms&quot;, &quot;&quot; + delay );
+
+//System.out.println(&quot;    set interation_start_time_ms to : &quot; + vars.get(&quot;interation_start_time_ms&quot;) + &quot;  -  &quot; + (new Date(Long.valueOf(vars.get(&quot;interation_start_time_ms&quot;))).toString()));
+System.out.println(&quot;    pausing for calculated delay of &quot; + delay + &quot; ms&quot;  );
+return delay;</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+        </JSR223Timer>
         <hashTree/>
         <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="DataHunterLifecycle" enabled="true">
           <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
@@ -93,7 +119,7 @@ OUT.println (&quot;------------------------------------------------------------&
               </elementProp>
               <elementProp name="FORCE_TXN_FAIL_PERCENT" elementType="Argument">
                 <stringProp name="Argument.name">FORCE_TXN_FAIL_PERCENT</stringProp>
-                <stringProp name="Argument.value">${__P(ForceTxnFailPercent,25)}</stringProp>
+                <stringProp name="Argument.value">${__P(ForceTxnFailPercent,0)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="______________________ driver settings: ________________________" elementType="Argument">
@@ -177,6 +203,143 @@ OUT.println (&quot;------------------------------------------------------------&
         </JavaSampler>
         <hashTree/>
       </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="DataHunterLifecycleIterator" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(Duration,70)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="DataHunterLifecycleIterator" enabled="true">
+          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="DATAHUNTER_URL_HOST_PORT" elementType="Argument">
+                <stringProp name="Argument.name">DATAHUNTER_URL_HOST_PORT</stringProp>
+                <stringProp name="Argument.value">${dataHunterUrlHostPort}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="DATAHUNTER_APPLICATION_ID" elementType="Argument">
+                <stringProp name="Argument.name">DATAHUNTER_APPLICATION_ID</stringProp>
+                <stringProp name="Argument.value">DATAHUNTER_PV_TEST</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="FORCE_TXN_FAIL_PERCENT" elementType="Argument">
+                <stringProp name="Argument.name">FORCE_TXN_FAIL_PERCENT</stringProp>
+                <stringProp name="Argument.value">${__P(ForceTxnFailPercent,0)}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="______________________ interation settings: _____________________" elementType="Argument">
+                <stringProp name="Argument.name">______________________ interation settings: _____________________</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="ITERATE_FOR_PERIOD_IN_SECS" elementType="Argument">
+                <stringProp name="Argument.name">ITERATE_FOR_PERIOD_IN_SECS</stringProp>
+                <stringProp name="Argument.value">25  </stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="ITERATE_FOR_NUMBER_OF_TIMES" elementType="Argument">
+                <stringProp name="Argument.name">ITERATE_FOR_NUMBER_OF_TIMES</stringProp>
+                <stringProp name="Argument.value"> </stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="ITERATION_PACING_IN_SECS" elementType="Argument">
+                <stringProp name="Argument.name">ITERATION_PACING_IN_SECS</stringProp>
+                <stringProp name="Argument.value">10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="STOP_THREAD_ON_FAILURE" elementType="Argument">
+                <stringProp name="Argument.name">STOP_THREAD_ON_FAILURE</stringProp>
+                <stringProp name="Argument.value">false</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="______________________ driver settings: ________________________" elementType="Argument">
+                <stringProp name="Argument.name">______________________ driver settings: ________________________</stringProp>
+                <stringProp name="Argument.value">Refer Mark59 User Guide for details</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="DRIVER" elementType="Argument">
+                <stringProp name="Argument.name">DRIVER</stringProp>
+                <stringProp name="Argument.value">CHROME</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="HEADLESS_MODE" elementType="Argument">
+                <stringProp name="Argument.name">HEADLESS_MODE</stringProp>
+                <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="PAGE_LOAD_STRATEGY" elementType="Argument">
+                <stringProp name="Argument.name">PAGE_LOAD_STRATEGY</stringProp>
+                <stringProp name="Argument.value">normal</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="PROXY" elementType="Argument">
+                <stringProp name="Argument.name">PROXY</stringProp>
+                <stringProp name="Argument.value"> </stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="ADDITIONAL_OPTIONS" elementType="Argument">
+                <stringProp name="Argument.name">ADDITIONAL_OPTIONS</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="WRITE_FFOX_BROWSER_LOGFILE" elementType="Argument">
+                <stringProp name="Argument.name">WRITE_FFOX_BROWSER_LOGFILE</stringProp>
+                <stringProp name="Argument.value">false</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="______________________ logging settings: _______________________" elementType="Argument">
+                <stringProp name="Argument.name">______________________ logging settings: _______________________</stringProp>
+                <stringProp name="Argument.value">Expected values: &apos;default&apos;, &apos;buffer&apos;, or &apos;write&apos;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Log_Screenshots_At_Start_Of_Transactions" elementType="Argument">
+                <stringProp name="Argument.name">Log_Screenshots_At_Start_Of_Transactions</stringProp>
+                <stringProp name="Argument.value">default</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Log_Screenshots_At_End_Of_Transactions" elementType="Argument">
+                <stringProp name="Argument.name">Log_Screenshots_At_End_Of_Transactions</stringProp>
+                <stringProp name="Argument.value">default</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Log_Page_Source_At_Start_Of_Transactions" elementType="Argument">
+                <stringProp name="Argument.name">Log_Page_Source_At_Start_Of_Transactions</stringProp>
+                <stringProp name="Argument.value">default</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Log_Page_Source_At_End_Of_Transactions" elementType="Argument">
+                <stringProp name="Argument.name">Log_Page_Source_At_End_Of_Transactions</stringProp>
+                <stringProp name="Argument.value">default</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Log_Perf_Log_At_End_Of_Transactions" elementType="Argument">
+                <stringProp name="Argument.name">Log_Perf_Log_At_End_Of_Transactions</stringProp>
+                <stringProp name="Argument.value">default</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="______________________ miscellaneous: __________________________" elementType="Argument">
+                <stringProp name="Argument.name">______________________ miscellaneous: __________________________</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="Restrict_To_Only_Run_On_IPs_List" elementType="Argument">
+                <stringProp name="Argument.name">Restrict_To_Only_Run_On_IPs_List</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="classname">com.mark59.datahunter.pvtest.performanceScripts.DataHunterLifecycleIteratorPvtScript</stringProp>
+        </JavaSampler>
+        <hashTree/>
+      </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="ServerUtil_localhost" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -190,6 +353,15 @@ OUT.println (&quot;------------------------------------------------------------&
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer" enabled="true">
+          <doubleProp>
+            <name>throughput</name>
+            <value>4.0</value>
+            <savedValue>0.0</savedValue>
+          </doubleProp>
+          <intProp name="calcMode">0</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
         <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="jr_localhost" enabled="true">
           <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
@@ -240,7 +412,7 @@ OUT.println (&quot;------------------------------------------------------------&
               </elementProp>
               <elementProp name="ALTERNATE SERVER ID" elementType="Argument">
                 <stringProp name="Argument.name">ALTERNATE SERVER ID</stringProp>
-                <stringProp name="Argument.value">HOSTID</stringProp>
+                <stringProp name="Argument.value">mylocal</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="CONNECTION PORT" elementType="Argument">
@@ -268,16 +440,46 @@ OUT.println (&quot;------------------------------------------------------------&
           <stringProp name="classname">com.mark59.servermetrics.ServerMetricsCapture</stringProp>
         </JavaSampler>
         <hashTree/>
-        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer" enabled="true">
-          <doubleProp>
-            <name>throughput</name>
-            <value>4.0</value>
-            <savedValue>0.0</savedValue>
-          </doubleProp>
-          <intProp name="calcMode">0</intProp>
-        </ConstantThroughputTimer>
-        <hashTree/>
       </hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report csv" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <hostname>true</hostname>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="TestPlan.comments">Recommended Standard csv report (default + hostname)</stringProp>
+        <stringProp name="filename">C:\Jmeter_Results\DataHunter\DataHunterTestResults.csv</stringProp>
+      </ResultCollector>
+      <hashTree/>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -312,81 +514,6 @@ OUT.println (&quot;------------------------------------------------------------&
           </value>
         </objProp>
         <stringProp name="filename"></stringProp>
-      </ResultCollector>
-      <hashTree/>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report xml" enabled="false">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>true</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="TestPlan.comments">produces &apos;standard&apos; xml results</stringProp>
-        <stringProp name="filename">C:\Jmeter_Results\DataHunter\DataHunterTestResults.xml</stringProp>
-      </ResultCollector>
-      <hashTree/>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report csv" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename">C:\Jmeter_Results\DataHunter\DataHunterTestResults.csv</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>

@@ -23,7 +23,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
  * @author Philip Webb
@@ -58,35 +57,7 @@ public final class SeleniumWebdriverFactory {
 		return driver;
 
 	}
-	
-	
-	@SuppressWarnings("deprecation")
-	public static WebDriver obtainWebDriver(String parmDrivertype, String useChromeDriverService ){
-		
-		if ("TRUE".equalsIgnoreCase(useChromeDriverService)) {
-			return obtainWebDriver(parmDrivertype);
-		}
-		
-		System.out.println("Otaining chrome driver path = " + chromedriverPath + "),  mode = " + parmDrivertype + ", NOT using the ChromeDriverService");
-		
-		ChromeOptions chromeOptions = new ChromeOptions();	
-		DesiredCapabilities capability = DesiredCapabilities.chrome();
-		capability.setPlatform(org.openqa.selenium.Platform.ANY);
-		System.setProperty("webdriver.chrome.driver", chromedriverPath);
-		
-		if (CHROME.equalsIgnoreCase(parmDrivertype)){  
-			chromeOptions.addArguments("start-maximized");
-	//		driver.manage().window().maximize();
-		} else if (CHROME_HEADLESS.equalsIgnoreCase(parmDrivertype)){
-			chromeOptions.addArguments("--headless", "-window-size=1920,1080");
-	//		driver.manage().window().setSize(new Dimension(1920, 1080));			
-		} else {
-			throw new RuntimeException("INVALID DRIVER TYPE : " +  parmDrivertype );
-		}
-		capability.setCapability(ChromeOptions.CAPABILITY, chromeOptions);			
-		return new ChromeDriver(capability);
 
-	}
 	
 	
 	
