@@ -137,7 +137,7 @@ The 'mark59' sample script can be found at:
 
 -(optional) Using the same steps as above, execute the 'iterator' sample script example at:
 
-    com.mark59.datahunter.pvtest.functionalTest.DataHunterSeleniumApiTest
+    com.mark59.datahunter.pvtest.performanceScripts.DataHunterLifecycleIteratorPvtScript
     
 
 To run in Jmeter: 
