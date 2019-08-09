@@ -11,14 +11,20 @@ The Mark59 core, selenium-implementation and sample Java projects have now been 
 	<dependency>
 	  <groupId>com.mark59</groupId>
 	  <artifactId>mark59-selenium-implementation</artifactId>
-	  <version>1.0-beta-2</version>
+	  <version>1.0-beta-3</version>
 	</dependency>
 
 The dataHunterPVTest project contains an example of a Jmeter/Selenium script using the mark59 framework. See the Mark59 Scripting Quickstart section below.     
 
 Detailed documention is now being produced (high on our priority list over the coming weeks), however the source already contains detailed javadoc which should assist any 'early adopters'.   
 
-Beta-2 Maven Central release allows for CSV summary output files to be used in extended reporting (coming soon..)
+## Releases
+
+<b>1.0-beta-1 :</b> initial release
+
+<b>1.0-beta-2 :</b> Maven Central release allows for CSV summary output files to be used in extended reporting (coming soon..)
+
+<b>1.0-beta-3 :</b> Introduces an 'iterable' browser based class, w3c option set to false (v76 chromedriver/selenium compatabilty issues)
 
 ## Terminologies
 
@@ -128,6 +134,12 @@ The 'mark59' sample script can be found at:
     
 - Try to execute this script in Eclipse ('Run As - Java Application').  Even if the setup is all good, it is possible you will get a failure due to a mismatch of the Selenium Chromedriver and the version of Chrome on your machine.  If so, you can replace 'chromedriver.exe' in the project root with a compatible version (see http://chromedriver.chromium.org/downloads)
 
+
+-(optional) Using the same steps as above, execute the 'iterator' sample script example at:
+
+    com.mark59.datahunter.pvtest.functionalTest.DataHunterSeleniumApiTest
+    
+
 To run in Jmeter: 
 
 - Build the project using Maven goals 'clean package'.  This will create a target jar of dataHunterPVTest.jar 
@@ -142,7 +154,7 @@ To run in Jmeter:
 
 - start Jmeter, and open test plan in the dataHunterPVTest project at \test-plans\DataHunterSeleniumApiTestPlan.jmx.  You will need to delete the ServerUtil_localhost Thread Group if you have not copied mark59-server-metrics.jar into lib/ext.
 
-- Run!  You can see the progress in the View Results Tree listener.   Note: don't get stressed if you see some DataHunterLifeCycle results go red (failure).  The transaction 'DH-lifecycle-0299-sometimes-I-fail' has been deliberately set to randomly fail 25% of the time.
+- Run!  You can see the progress in the View Results Tree listener.   Note: don't get stressed if you see some DataHunterLifeCycle results go red (failure).  The transaction 'DH-lifecycle-0299-sometimes-I-fail' may of been deliberately set to randomly fail a certai percentage of the time.
 
 - Report generation coming soon.. 
 
