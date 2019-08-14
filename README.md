@@ -4,9 +4,11 @@ Mark59 is a Java-based framework that enables integration of Selenium scripts wi
 
 ## Early Release Notes (Aug 2019) 
 
-This initial release will present the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
+The initial release presented the DataHunter application.  This application is designed to handle data retention and re-use between and during a performance test. 
 
-The Mark59 core, selenium-implementation and sample Java projects have now been included.  Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. As the Mark59 core and selenium-implementation project artifacts are dependencies for scripting, they have been added to the Maven Central Repository (group id com.mark59).  To write a script using Mark59, the dependency you need to add to your pom is:   
+The Mark59 core, selenium-implementation and sample dataHunterPVTest Java projects have now been included. Note at this point they have been added primarily for initial 'Beta' testing at iag as we produce the detailed documentation. The dataHunterPVTest project contains an example of a Jmeter/Selenium script using the mark59 framework. See the Mark59 Scripting Quickstart section below.
+
+As the Mark59 core and selenium-implementation project artifacts are dependencies for scripting, they have been added to the Maven Central Repository (group id com.mark59).  To write a script using the lastest deploy to Central of Mark59 the dependency you need to add to your pom:   
 
 	<dependency>
 	  <groupId>com.mark59</groupId>
@@ -14,7 +16,24 @@ The Mark59 core, selenium-implementation and sample Java projects have now been 
 	  <version>1.0-beta-3</version>
 	</dependency>
 
-The dataHunterPVTest project contains an example of a Jmeter/Selenium script using the mark59 framework. See the Mark59 Scripting Quickstart section below.     
+
+If you want to use our latest code base (ie, code checked in to this repo, but not yet deployed to the Central Repository), you need to: 
+ 
+- (as a minium) Clone and Import the 'mark59-core' and 'mark59-selenium-implementation' maven projects from this repo into your Eclipse workspace
+
+- Do a Maven Build on mark59-core using goals <b>clean package install</b>
+
+- Do a Maven Build on mark59-selenium-implementation using goals <b>clean package install</b>
+
+- The dependency you need to add to the pom of your Selenium Script project to point to these local builds is :   
+
+		
+		<dependency>
+			<groupId>com.mark59</groupId>
+			<artifactId>mark59-selenium-implementation</artifactId>
+			<version>1.0-beta-4</version>
+		</dependency>
+
 
 Detailed documention is now being produced (high on our priority list over the coming weeks), however the source already contains detailed javadoc which should assist any 'early adopters'.   
 
@@ -25,6 +44,10 @@ Detailed documention is now being produced (high on our priority list over the c
 <b>1.0-beta-2 :</b> Maven Central release allows for CSV summary output files to be used in extended reporting (coming soon..)
 
 <b>1.0-beta-3 :</b> Introduces an 'iterable' browser based class, w3c option set to false (v76 chromedriver/selenium compatabilty issues)
+
+<b>1.0-beta-4 :</b> <b>IN PROGRESS</b> (not yet deployed to Central) Improvements in 'iterable' browser based class, improve javadocs..
+
+
 
 ## Terminologies
 
