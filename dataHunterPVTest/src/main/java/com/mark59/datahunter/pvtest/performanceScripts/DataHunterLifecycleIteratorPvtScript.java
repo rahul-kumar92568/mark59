@@ -72,8 +72,9 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 		Map<String, String> jmeterAdditionalParameters = new LinkedHashMap<String, String>();
 		
 		jmeterAdditionalParameters.put(ITERATE_FOR_PERIOD_IN_SECS, 						"25");
-		jmeterAdditionalParameters.put(ITERATE_FOR_NUMBER_OF_TIMES,  					"0");
+		jmeterAdditionalParameters.put(ITERATE_FOR_NUMBER_OF_TIMES,  					 "0");
 		jmeterAdditionalParameters.put(ITERATION_PACING_IN_SECS,  						"10");
+		jmeterAdditionalParameters.put(STOP_THREAD_AFTER_TEST_START_IN_SECS,  			 "0");
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_URL_HOST_PORT,  DslConstants.DEFAULT_DATAHUNTER_URL_HOST_PORT);
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_APPLICATION_ID, TestConstants.DATAHUNTER_PV_TEST);
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"50");
@@ -150,13 +151,6 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 		checkSqlOk(sqlResultText, deleteMultiplePoliciesActionPage);
 		jm.endTransaction("DH-lifecycle-0100-deleteMultiplePolicies");	
 		
-		
-		if (Thread.currentThread().getName().equals("DataHunterLifecycle 1-2")){
-			System.out.println("SIMULATE FAILURE");
-			throw new RuntimeException(" -- simulate failure -- ");
-		}
-		
-		
 // 		add some policies
 		Policies policy = new Policies(application, null, lifecycle, DslConstants.UNUSED, "", 0L);
 		AddPolicyActionPage addPolicyActionPage;
@@ -186,8 +180,13 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 			addPolicyPage.homePageLink().waitUntilClickable();   
 			jm.endTransaction("DH-lifecycle-0200-addPolicy");
 		} 
+				
+//		if (Thread.currentThread().getName().equals("main")){
+//			System.out.println("SIMULATING FAILURE ON THREAD " + Thread.currentThread().getName());
+//			throw new RuntimeException(" -- simulate failure on " + Thread.currentThread().getName() +" -- ");
+//		}
 		
-//		dummy transaction just to trest transaction failure behaviour 		
+//		dummy transaction just to test transaction failure behaviour 		
 		jm.startTransaction("DH-lifecycle-0299-sometimes-I-fail");
 		int randomNum_1_to_100 = ThreadLocalRandom.current().nextInt(1, 101);
 		if ( randomNum_1_to_100 >= forceTxnFailPercent ) {
@@ -295,6 +294,16 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 		jm.endTransaction("DH-lifecycle-9999-finalize-deleteMultiplePolicies");	
 	}
 
+	
+	@Override
+	protected void userActionsOnScriptFailure(JavaSamplerContext context, JmeterFunctionsForSeleniumScripts jm,	WebDriver driver) {
+		// just as a demo, create some transaction and go to some random page (that is different to the page the simulated crash occurred
+		jm.startTransaction("DH-lifecycle-9998-userActionsOnScriptFailure");
+		new DirectPageGets(driver, context.getParameter(TestConstants.PARM_NAME_DATAHUNTER_URL_HOST_PORT), policySelectionCriteria.getApplication()).gotoCountPoliciesPage(); 
+		System.out.println("   -- page at userActionsOnScriptFailure has been changed to " + driver.getTitle() + " --");
+		jm.endTransaction("DH-lifecycle-9998-userActionsOnScriptFailure");
+	}
+	
 	
 	private void checkSqlOk(String sqlResultText, SuperDataHunterActionPage actionPaged) {
 		if ( ! DslConstants.SQL_RESULT_PASS.equals(sqlResultText) ) {

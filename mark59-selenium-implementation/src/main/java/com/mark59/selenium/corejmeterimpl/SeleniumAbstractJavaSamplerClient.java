@@ -101,7 +101,7 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	
 	
 	/** 
-	 * Creates the list of parameters with default values, as they would appear on the Jmeter GUI for the JavaSampler being implemented.
+	 * Creates the list of parameters with default values, as they would appear on the JMeter GUI for the JavaSampler being implemented.
 	 * <p>A standard set of parameters are defined (defaultArgumentsMap). Additionally,an implementing class (the script extending this class) 
 	 * can add additional parameters (or override the standard defaults) via the additionalTestParameters() method.    
 	 * 
@@ -181,7 +181,8 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 			LOG.debug("<< finished test" );
 
 		} catch (Exception | AssertionError e) {
-			scriptExceptionHandling(e);
+
+			scriptExceptionHandling(context, e);
 		
 		} finally {
 			if (! keepBrowserOpen.equals(KeepBrowserOpen.ALWAYS )     ) { 
@@ -191,21 +192,29 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 		return jm.getMainResult();
 	}
 
+	
 
 	/**
 	 * Log and record this script execution as a failure
+	 * @param context the current JavaSamplerContext  
 	 * @param e can be an exception or Assertion error
 	 */
-	protected void scriptExceptionHandling(Throwable e) {
+	protected void scriptExceptionHandling(JavaSamplerContext context, Throwable e) {
 		System.err.println("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown.  See log and screenshot directory for details.  Stack trace:");
 		e.printStackTrace();
 		LOG.error("ERROR : " + this.getClass() + ".  Exception " +  e.getClass().getName() +  " thrown",  e);
+
+		seleniumDriverWrapper.documentExceptionState(new Exception(e));
+
+		try {
+			userActionsOnScriptFailure(context, jm, driver); 
+		} catch (Exception errorHandlingException) {
+			LOG.error("ERROR : " + this.getClass() + ".  An exception occured during scriptExceptionHandling " +  errorHandlingException.getClass().getName() +  " thrown",  errorHandlingException);
+			errorHandlingException.printStackTrace();
+		}
 		
 		jm.failTest();
 		jm.tearDown();
-		
-		Exception x = new Exception(e);
-		seleniumDriverWrapper.documentExceptionState(x);
 		
 		if (keepBrowserOpen.equals(KeepBrowserOpen.ONFAILURE)){
 			// force browser to stay open
@@ -214,6 +223,23 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	}
 
 	
+	/**
+	 * Intended to be an override in scripts where some user interactions is required when a script fails 
+	 * (via the browser if still available, or other application interface such as an API call).
+	 * <p>An example of such an interaction may be to force a user-id logout, where re-entry into the user is
+	 * needed, and the user may be otherwise be left in an uncertain state.
+	 * <p>If an exception occurs during execution the of this method, the exception is logged and the method simply exited
+	 * (the original failure will still be handled by the Mark59 framework).  
+	 *          
+	 * @param context the current JavaSamplerContext
+	 * @param jm the current JmeterFunctionsForSeleniumScripts  
+	 * @param driver the current WebDriver
+	 */
+	protected void userActionsOnScriptFailure(JavaSamplerContext context, JmeterFunctionsForSeleniumScripts jm, WebDriver driver) {
+		
+	};
+
+		
 	
 	protected abstract void runSeleniumTest(JavaSamplerContext context, JmeterFunctionsForSeleniumScripts jm, WebDriver driver);
 

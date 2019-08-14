@@ -34,41 +34,60 @@ import com.mark59.selenium.drivers.SeleniumDriverFactory;
 
 
 /**
- * Selenium flavoured extension of the Jmeter Java Sampler AbstractJavaSamplerClient.
+ * Selenium flavoured extension of the JMeter Java Sampler AbstractJavaSamplerClient.
  * 
- * <p>This particular class extends the base Mark59 implementation of the AbstractJavaSamplerClient in Mark59, SeleniumAbstractJavaSamplerClient. 
+ * <p>This particular class extends the base implementation of the JMeter Java Request class AbstractJavaSamplerClient used in Mark59, SeleniumAbstractJavaSamplerClient. 
  * 
- * <p>The extra functionality it provides gives the ability to perform a 'inital' action (eg, a logon), iterate (eg, repeatedly perform an 
- * application workflow of some kind), and at the end, which can be determined by a count of iterations and/or a time setting, do a 'finalize' action (eg logoff).
+ * <p>The extra functionality it provides gives the ability to perform an 'initial' action (eg, a logon), iterate (eg, repeatedly perform an 
+ * application workflow of some kind), and at the end, which can be determined by a count of iterations and/or a time settings, perform a 'finalize' action (eg logoff).
  * 
- * The parameters from SeleniumAbstractJavaSamplerClient are available, plus these additions to control pacing and flow:
+ * The parameters from Mark59 class SeleniumAbstractJavaSamplerClient are available, plus these additions to control pacing and flow:
  * <ul> 
- * <li> <b>ITERATE_FOR_PERIOD_IN_SECS.</b> at the end of each iteration, a check is made to see if the time the script has reached this value in seconds.
- *   If so, the finalize is executed and the script completed.  Must be a non-zero numneric to be active
- * <li> <b>ITERATE_FOR_NUMBER_OF_TIMES.</b> at the end of each iteration, a check is made to see if the time the number of iterations has reached this value.
- *  If so, the finalize is executed and the script completed.  Must be a non-zero numneric to be active
+ * <li> <b>ITERATE_FOR_PERIOD_IN_SECS.</b> at the end of each iteration, a check is made to see if the time in seconds the script has been iterating has reached this.
+ *   If so, the finalize is executed and the script completed.  Must be a non-zero numeric to be active.
+ * <li> <b>ITERATE_FOR_NUMBER_OF_TIMES.</b> at the end of each iteration, a check is made to see if the number of iterations the script has performed has reached this value.
+ *  If so, the finalize is executed and the script completed.  Must be a non-zero numeric to be active.
+ * <li> <b>STOP_THREAD_AFTER_TEST_START_IN_SECS.</b> at the start of each iteration, a check is made to see if the time in seconds since the JMeter test started exceeds this value.
+ *  If so, the finalize is executed and the and the script completed. The check is also made at script start-up, so when the script (re)starts and this condition has been met the thread will
+ *  be stopped immediately.  Must be a non-zero numeric to be active.   
  * <li> <b>ITERATION_PACING_IN_SECS.</b> the target length of time each iteration.  A thread delay calculated at the end of the iteration to force the iteration to the iteration pacing time.  
- *   Must be a non-zero numneric to be active  
+ *   Must be a non-zero numeric to be active.  
  * <li> <b>STOP_THREAD_ON_FAILURE.</b> by default the script thread will re-start of failure (timers permitting).  This flag can be set to <b>true</b> to force the thread to stop for the rest of the test.  
  * </ul>
  *     
- * <p>Note that if neither <b>ITERATE_FOR_PERIOD_IN_SECS</b> or <b>ITERATE_FOR_NUMBER_OF_TIMES</b> is set, the thread will be stopped (a message giving the reason is logged).  
- * If BOTH are set, the iteration looping ends when the first condition is met. 
+ * <p>Note that if none of the conditions <b>ITERATE_FOR_PERIOD_IN_SECS</b> or <b>ITERATE_FOR_NUMBER_OF_TIMES</b> or <b>STOP_THREAD_AFTER_TEST_START_IN_SECS</b> are set, the thread will be stopped 
+ * (a message giving the reason is logged). If multiple conditions are set, the iteration looping ends when the first condition is met. 
  *
  * <p>
  * <b>A simple example:</b><br>  
  *---------------------<br>
- *
  *Say the settings are:<br>
  * ITERATE_FOR_PERIOD_IN_SECS =	25<br>
  * ITERATE_FOR_NUMBER_OF_TIMES = blank<br>
  * ITERATION_PACING_IN_SECS = 10<br> 
+ * STOP_THREAD_AFTER_TEST_START_IN_SECS = 0<br>
  * STOP_THREAD_ON_FAILURE = false<br>
  * <p>
- *Then each iteration will take 10 seconds (unless the script execution goes over 10 secs - in which case the next iteration will start immediately provided iterations started more than 25 secs ago).
+ *Then each iteration will take 10 seconds (unless the script execution goes over 10 secs - in which case the next iteration will start immediately provided iterations started no more than 25 secs ago).
  *After the 3rd iteration, the script would of been iterating for 30 seconds.  The total period of iteration is 25 secs, so the finalize will be performed and the script completes.
  *Assuming no other timers in the thread group, the script will then finish executing if the Thread Group Count or Scheduler conditions have been met, or otherwise restart again (even if a 
  *failure occurred during the script execution).    
+ * <p>
+ * <b>Another example:</b><br>  
+ *---------------------<br>
+ * ITERATE_FOR_PERIOD_IN_SECS =	25<br>
+ * ITERATE_FOR_NUMBER_OF_TIMES = blank<br>
+ * ITERATION_PACING_IN_SECS = 10<br> 
+ * STOP_THREAD_AFTER_TEST_START_IN_SECS = <b>600</b><br>
+ * STOP_THREAD_ON_FAILURE = false<br>
+ * <p>
+ *The same as the first example but the value STOP_THREAD_AFTER_TEST_START_IN_SECS will <b>additionally</b> be tested at the start of each iteration.  So, assuming the test is still going
+ *at 600 seconds (eg, not already stopped by a shorter Scheduler Duration condition in the Thread Group setup), then when an iteration is due to start more than 600 seconds since the test
+ *started (JMeter variable TESTSTART.MS) the thread will be stopped.  Generally, the STOP_THREAD_AFTER_TEST_START_IN_SECS condition may be useful when you are using a thread that is 
+ *iterating many times over a long period.  Then, if a thread failure occurs near the end of the test, the entire test is not unduly lengthened by the thread re-start.  
+ *
+ *<p>Please note that keeping a single browser / thread open and iterating for an entire test means no intermediate results can be reported (and all the data needs to be held in memory), 
+ *so it is suggested this technique should only be used when necessary.    
  *
  * @see SeleniumAbstractJavaSamplerClient
  * 
@@ -78,10 +97,11 @@ import com.mark59.selenium.drivers.SeleniumDriverFactory;
 public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  SeleniumAbstractJavaSamplerClient {
 
 	public static Logger LOG = Logger.getLogger(SeleniumIteratorAbstractJavaSamplerClient.class);
-	public static final String ITERATE_FOR_PERIOD_IN_SECS 	= "ITERATE_FOR_PERIOD_IN_SECS";
-	public static final String ITERATE_FOR_NUMBER_OF_TIMES 	= "ITERATE_FOR_NUMBER_OF_TIMES";
-	public static final String ITERATION_PACING_IN_SECS 	= "ITERATION_PACING_IN_SECS";	
-	public static final String STOP_THREAD_ON_FAILURE 		= "STOP_THREAD_ON_FAILURE";
+	public static final String ITERATE_FOR_PERIOD_IN_SECS 			= "ITERATE_FOR_PERIOD_IN_SECS";
+	public static final String ITERATE_FOR_NUMBER_OF_TIMES			= "ITERATE_FOR_NUMBER_OF_TIMES";
+	public static final String ITERATION_PACING_IN_SECS 			= "ITERATION_PACING_IN_SECS";	
+	public static final String STOP_THREAD_AFTER_TEST_START_IN_SECS	= "STOP_THREAD_AFTER_TEST_START_IN_SECS";	
+	public static final String STOP_THREAD_ON_FAILURE 				= "STOP_THREAD_ON_FAILURE";
 	
 	private KeepBrowserOpen keepBrowserOpen = KeepBrowserOpen.NEVER;
 
@@ -94,6 +114,7 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 		staticIterMap.put(ITERATE_FOR_PERIOD_IN_SECS, 						"0");
 		staticIterMap.put(ITERATE_FOR_NUMBER_OF_TIMES,  					"1");
 		staticIterMap.put(ITERATION_PACING_IN_SECS,  						"0");
+		staticIterMap.put(STOP_THREAD_AFTER_TEST_START_IN_SECS,				"0");
 		staticIterMap.put(STOP_THREAD_ON_FAILURE,		  String.valueOf(false));
 		staticIterMap.putAll(defaultArgumentsMap);
 		
@@ -118,11 +139,11 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 *  Note the use of the catch on  AssertionError - as this is NOT an Exception but an Error, and therefore need to be explicitly caught. 
+	 * Note the use of the catch on  AssertionError - as this is NOT an Exception but an Error, and therefore need to be explicitly caught. 
 	 */
 	@Override
 	public SampleResult runTest(JavaSamplerContext context) {
+		
 		if (LOG.isDebugEnabled()) LOG.debug(this.getClass().getName() +  " : exectuing runTest (iterator)" );
 
 		if ( context.getJMeterContext() != null  && context.getJMeterContext().getThreadGroup() != null ) {
@@ -135,7 +156,21 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 			if (tg!=null) tg.stop();
 			return null;
 		}
-	
+		
+		Long jMeterTestStartMs = 0L;
+		if (context.getJMeterVariables() != null) {
+			jMeterTestStartMs = convertToLong("TESTSTART.MS", context.getJMeterVariables().get("TESTSTART.MS"),0L);
+		} else {
+			LOG.debug("JMeterVariables do not exist (probably executing outside JMeter - so any STOP_THREAD_AFTER_TEST_START_IN_SECS condition is not checked");
+		}
+		Long stopThreadAfterTestStartMs = convertToLong(STOP_THREAD_AFTER_TEST_START_IN_SECS, context.getParameter(STOP_THREAD_AFTER_TEST_START_IN_SECS),0L) * 1000;			
+		
+		if (isStopThreadAfterTestStartMsConditionMet(jMeterTestStartMs, stopThreadAfterTestStartMs)){
+			LOG.info("Thread Group " + tgName + " is stopping ('STOP_THREAD_AFTER_TEST_START_IN_SECS' has been reached)" );
+			if (tg!=null) tg.stop();
+			return null;	
+		}		
+		
 		Map<String,String> jmeterRuntimeArgumentsMap = convertJmeterArgumentsToMap(context);
 		
 		seleniumDriverWrapper = new SeleniumDriverFactory().makeDriverWrapper(jmeterRuntimeArgumentsMap) ;
@@ -148,23 +183,23 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 			initiateSeleniumTest(context, jm, driver);
 			LOG.debug("<< finished initiateSeleniumTest" );
 
-			Long scriptStartTimeMs 		 = System.currentTimeMillis(); 			
-			Long iterateForPeriodMs 	 = convertToLong(ITERATE_FOR_PERIOD_IN_SECS, context.getParameter(ITERATE_FOR_PERIOD_IN_SECS),0L) * 1000;
-			Integer iterateNumberOfTimes = convertToInteger(context.getParameter(ITERATE_FOR_NUMBER_OF_TIMES));
-			Long iterationPacingMs       = convertToLong(ITERATION_PACING_IN_SECS, context.getParameter(ITERATION_PACING_IN_SECS),0L) * 1000;
+			Long scriptStartTimeMs 		 	= System.currentTimeMillis(); 			
+			Long iterateForPeriodMs 	 	= convertToLong(ITERATE_FOR_PERIOD_IN_SECS, context.getParameter(ITERATE_FOR_PERIOD_IN_SECS),0L) * 1000;
+			Integer iterateNumberOfTimes 	= convertToInteger(context.getParameter(ITERATE_FOR_NUMBER_OF_TIMES));
+			Long iterationPacingMs       	= convertToLong(ITERATION_PACING_IN_SECS, context.getParameter(ITERATION_PACING_IN_SECS),0L) * 1000;
 			long scriptIterationStartTimeMs;
 			long delay = 0;
 			
 			if (LOG.isDebugEnabled()) LOG.debug(thread + ": tgName = " + tgName + ", scriptStartTimeMs = " + scriptStartTimeMs + ", iteratePeriodMs = " + iterateForPeriodMs + ", iterateNumberOfTimes = " + iterateNumberOfTimes );
 		
-			if (iterateForPeriodMs==0 && iterateNumberOfTimes==0 ) {
-				LOG.info("Thread Group " + tgName + " is stopping (neither ITERATE_FOR_PERIOD_IN_SECS or ITERATE_FOR_NUMBER_OF_TIMES have been set to a valid non-zero value)" );
+			if (iterateForPeriodMs==0 && iterateNumberOfTimes==0 && stopThreadAfterTestStartMs==0 ) {
+				LOG.info("Thread Group " + tgName + " is stopping (none of ITERATE_FOR_PERIOD_IN_SECS or ITERATE_FOR_NUMBER_OF_TIMES or STOP_THREAD_AFTER_TEST_START_IN_SECS have been set to a valid non-zero value)" );
 				if (tg!=null) tg.stop();
 				return null;
 			}
 			int i=0;
 			
-			while ( ! areIterateEndConditionsMet(scriptStartTimeMs, iterateForPeriodMs, iterateNumberOfTimes, i )) {
+			while ( ! isAnyIterateEndConditionMet(scriptStartTimeMs, iterateForPeriodMs, iterateNumberOfTimes, i, jMeterTestStartMs,  stopThreadAfterTestStartMs)) {
 				i++;
 				LOG.debug(">> iterateSeleniumTest (" + i + ")");
 				scriptIterationStartTimeMs =  System.currentTimeMillis();
@@ -190,7 +225,7 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 
 		} catch (Exception | AssertionError e) {
 
-			scriptExceptionHandling(e);	
+			scriptExceptionHandling(context, e);	
 
 			if ("true".equalsIgnoreCase(context.getParameter(STOP_THREAD_ON_FAILURE))){
 				LOG.info("Thread Group " + tgName + " is stopping (script failure, and STOP_THREAD_ON_FAILURE is set to true)" );
@@ -212,7 +247,7 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 		if (NumberUtils.isCreatable(parameter)){
 			convertedLong = Long.valueOf(parameter.trim());
 		} else {
-			LOG.info(returnedValueForInvalidParameter + " is being assumed for the paramter '" + parameterName + "'" );
+			LOG.debug(returnedValueForInvalidParameter + " is being assumed for the parameter '" + parameterName + "'" );
 		}
 		return convertedLong;
 	}
@@ -226,14 +261,34 @@ public abstract class SeleniumIteratorAbstractJavaSamplerClient  extends  Seleni
 		return convertedInt;
 	}
 
-	private boolean areIterateEndConditionsMet(Long scriptStartTimeMs, Long iterateForPeriodMs, Integer iterateNumberOfTimes, Integer alreadyIterated) {
-		if ( iterateNumberOfTimes > 0 && alreadyIterated >= iterateNumberOfTimes ) {
+	private boolean isAnyIterateEndConditionMet(Long scriptStartTimeMs, Long iterateForPeriodMs, 
+			Integer iterateNumberOfTimes, Integer alreadyIterated, Long jMeterTestStartMs, Long stopThreadAfterTestStartMs) {
+		
+		if ( iterateNumberOfTimes > 0 && alreadyIterated >= iterateNumberOfTimes ){
 			return true;
 		}
-		if ( iterateForPeriodMs > 0 &&  System.currentTimeMillis() > scriptStartTimeMs + iterateForPeriodMs  ) {
+		if ( iterateForPeriodMs > 0 &&  System.currentTimeMillis() > scriptStartTimeMs + iterateForPeriodMs ){
 			return true;
 		}
+		if (isStopThreadAfterTestStartMsConditionMet(jMeterTestStartMs, stopThreadAfterTestStartMs)) {
+			LOG.info("Thread Group " + tgName + " will be stopped on any further Thread Loops ('STOP_THREAD_AFTER_TEST_START_IN_SECS' has been reached)" );
+			return true;
+		};		
 		return false;
+	}
+
+
+	/**
+	 * @param jMeterTestStartMs  obtained from JMeter variable "TESTSTART.MS"
+	 * @param stopThreadAfterTestStartMs how long to run the thread 
+	 * @return a boolean (is the condition met?)
+	 */
+	private boolean isStopThreadAfterTestStartMsConditionMet(Long jMeterTestStartMs, Long stopThreadAfterTestStartMs) {
+		if ( jMeterTestStartMs > 0 && stopThreadAfterTestStartMs > 0 &&  System.currentTimeMillis() > jMeterTestStartMs + stopThreadAfterTestStartMs ){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 
