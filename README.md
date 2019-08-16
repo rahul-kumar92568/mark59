@@ -19,7 +19,7 @@ As the Mark59 core and selenium-implementation project artifacts are dependencie
 
 If you want to use our latest code base (ie, code checked in to this repo, but not yet deployed to the Central Repository), you need to: 
  
-- (as a minium) Clone and Import the 'mark59-core' and 'mark59-selenium-implementation' maven projects from this repo into your Eclipse workspace
+- (as a minimum) Clone and Import the 'mark59-core' and 'mark59-selenium-implementation' maven projects from this repo into your Eclipse workspace
 
 - Do a Maven Build on mark59-core using goals <b>clean package install</b>
 
