@@ -177,7 +177,7 @@ To run in Jmeter:
 
 - start Jmeter, and open test plan in the dataHunterPVTest project at \test-plans\DataHunterSeleniumApiTestPlan.jmx.  You will need to delete the ServerUtil_localhost Thread Group if you have not copied mark59-server-metrics.jar into lib/ext.
 
-- Run!  You can see the progress in the View Results Tree listener.   Note: don't get stressed if you see some DataHunterLifeCycle results go red (failure).  The transaction 'DH-lifecycle-0299-sometimes-I-fail' may of been deliberately set to randomly fail a certai percentage of the time.
+- Run!  You can see the progress in the View Results Tree listener.   Note: don't get stressed if you see some DataHunterLifeCycle results go red (failure).  The transaction 'DH-lifecycle-0299-sometimes-I-fail' may of been deliberately set to randomly fail a certain percentage of the time.
 
 - Report generation coming soon.. 
 
