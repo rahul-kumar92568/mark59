@@ -307,6 +307,7 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	 * 
 	 * @param numberOfThreads number Of Java Threads
 	 * @param threadStartGapMs  time between start of each thread
+	 * @param threadParameters  parameter key and list of values to be passed to each thread
 	 */
 	protected void runMultiThreadedSeleniumTest(int numberOfThreads, int threadStartGapMs, Map<String, List<String>>threadParameters) {
 		mockJmeterProperties();
