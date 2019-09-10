@@ -14,15 +14,6 @@
   limitations under the License.
 */
 
-DROP USER IF EXISTS 'admin'@'localhost';
-DROP USER IF EXISTS 'admin'@'%';
-
-CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
-GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
-CREATE USER 'admin'@'%' IDENTIFIED BY 'admin';
-GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-
 
 DROP DATABASE IF EXISTS `datahunterdb`;
 CREATE DATABASE `datahunterdb`;

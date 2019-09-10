@@ -19,6 +19,7 @@ package com.mark59.selenium.utils;
 import java.time.Duration;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -106,18 +107,36 @@ public abstract class SuperPageElement<T extends SuperPageElement<?>> {
 	}
 
 	
-	public <C> C waitUntilCondition(ExpectedCondition<C> condition) {
+	
+	public <C> C waitUntilCondition(ExpectedCondition<C> condition, boolean debug, Level level) {
+		if (!debug) {
+			return FluentWaitFactory.getFluentWait(driver, timeout, pollingFrequency).until(condition);
+		} else {
+			return waitUntilConditonsDebugMode(condition, level);  
+		}
+	}
+	
+	public <C> C waitUntilCondition(ExpectedCondition<C> condition, boolean debug) {
+		if (!debug) {
+			return FluentWaitFactory.getFluentWait(driver, timeout, pollingFrequency).until(condition);
+		} else {
+			return waitUntilConditonsDebugMode(condition);  
+		}
+	}
 		
+	public <C> C waitUntilCondition(ExpectedCondition<C> condition) {
 		if (!waitCondionsDebugMode) {
 			return FluentWaitFactory.getFluentWait(driver, timeout, pollingFrequency).until(condition);
 		} else {
-			return runWaitUntilConditonsDebugMode(condition);  
+			return waitUntilConditonsDebugMode(condition);  
 		}
 	}
 
-
+	private <C> C waitUntilConditonsDebugMode(ExpectedCondition<C> condition) {
+		return waitUntilConditonsDebugMode(condition, Level.INFO);
+	}
 	
-	private <C> C runWaitUntilConditonsDebugMode(ExpectedCondition<C> condition) {
+	private <C> C waitUntilConditonsDebugMode(ExpectedCondition<C> condition, Level level) {
 		
 		int webdriverTimeOutInSeconds = new Long( pollingFrequency.getSeconds() ).intValue() + 1;          //will generally get set to 1 
 		
@@ -125,10 +144,11 @@ public abstract class SuperPageElement<T extends SuperPageElement<?>> {
 		
 		for (int i = 1; i <= numberOfAttempts; i++ ) {
 			try {
-				if (i>1) LOG.debug( "re-attempt (try #" + i + " of " + numberOfAttempts + ") timeout : " + webdriverTimeOutInSeconds + "s" );
+//				if (i>1) LOG.debug( "re-attempt (try #" + i + " of " + numberOfAttempts + ") timeout : " + webdriverTimeOutInSeconds + "s" );
+				LOG.log(level, "re-attempt (try #" + i + " of " + numberOfAttempts + ") timeout : " + webdriverTimeOutInSeconds + "s" );
 				return new WebDriverWait(driver, webdriverTimeOutInSeconds).until(condition);
 			} catch (Exception e) {
-				LOG.debug(" condition for " + condition.getClass() + " not met : " + e.getMessage() );
+				LOG.log(level, " condition for " + condition.getClass() + " not met : " + e.getMessage() );
 			}
 		}  
 		

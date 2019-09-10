@@ -1,0 +1,32 @@
+{
+  "CPU_mylocal" : {
+    "transaction" : "CPU_mylocal",
+    "sampleCount" : 6,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 38.333333333333336,
+    "minResTime" : 9.0,
+    "maxResTime" : 54.0,
+    "pct1ResTime" : 54.0,
+    "pct2ResTime" : 54.0,
+    "pct3ResTime" : 54.0,
+    "throughput" : 0.08006191454724988,
+    "receivedKBytesPerSec" : 0.0,
+    "sentKBytesPerSec" : 0.0
+  },
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 6,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 38.333333333333336,
+    "minResTime" : 9.0,
+    "maxResTime" : 54.0,
+    "pct1ResTime" : 54.0,
+    "pct2ResTime" : 54.0,
+    "pct3ResTime" : 54.0,
+    "throughput" : 0.08006191454724988,
+    "receivedKBytesPerSec" : 0.0,
+    "sentKBytesPerSec" : 0.0
+  }
+}

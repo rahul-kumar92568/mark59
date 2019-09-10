@@ -83,8 +83,9 @@ import com.mark59.selenium.drivers.SeleniumDriverFactory;
  * <p>
  *The same as the first example but the value STOP_THREAD_AFTER_TEST_START_IN_SECS will <b>additionally</b> be tested at the start of each iteration.  So, assuming the test is still going
  *at 600 seconds (eg, not already stopped by a shorter Scheduler Duration condition in the Thread Group setup), then when an iteration is due to start more than 600 seconds since the test
- *started (JMeter variable TESTSTART.MS) the thread will be stopped.  Generally, the STOP_THREAD_AFTER_TEST_START_IN_SECS condition may be useful when you are using a thread that is 
- *iterating many times over a long period.  Then, if a thread failure occurs near the end of the test, the entire test is not unduly lengthened by the thread re-start.  
+ *started (JMeter variable TESTSTART.MS) the script finalizes. The thread then stops if/when the script tries to restart.  Generally, the STOP_THREAD_AFTER_TEST_START_IN_SECS 
+ *condition may be useful when you are using a thread that is iterating many times over a long period.  Then, if a thread failure occurs near the end of the test, the entire test is not 
+ *unduly lengthened by the thread re-start.  
  *
  *<p>Please note that keeping a single browser / thread open and iterating for an entire test means no intermediate results can be reported (and all the data needs to be held in memory), 
  *so it is suggested this technique should only be used when necessary.    

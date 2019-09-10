@@ -24,8 +24,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.mark59.datahunter.application.AppConstants;
-
 /**
  * @author Philip Webb
  * Written: Australian Winter 2019
@@ -40,8 +38,6 @@ public class HomeController {
 		String urltoContext = request.getServerName() + ":" + Integer.toString(request.getServerPort()) + request.getContextPath() ; 
 //		System.out.println("urltoContext:  [" + urltoContext + "]" );     
 		
-		model.addAttribute("greeting", "Welcome to the home of the Data Hunter Application");
-		model.addAttribute("tagline", "Designed to cater for performance testing.  (Version " + AppConstants.DATAHUNTER_VERSION + ")");
 		model.addAttribute("urltoContext", urltoContext );
 		
 //		System.out.println(">>>> Mome Controller request parameters");

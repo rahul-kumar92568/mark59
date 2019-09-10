@@ -41,8 +41,6 @@
 
 <body style="background-color:white; ">
 
-<p>${greeting}. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${tagline}</p>
-
 <br><br><br>
 <h1 style="text-align:center;" >The Data Hunter</h1>
 <h3 style="text-align:center;" >Designed for Performance and Volume Testing</h3>
@@ -64,7 +62,9 @@
 	<tr><td valign="top"><img src="icons/h2-logo.png" height="40" width="40"/></td>     <td><a href="http://${urltoContext}/h2-console">H2 Database Console (for H2 only)</a></td></tr>
 </table>
 
-
+<br>
+<br>
+		<p>Version: Beta4. "Early Release"  Please see our Release Notes at https://github.com/iagcl/mark59</p>  
 </body>
 
 

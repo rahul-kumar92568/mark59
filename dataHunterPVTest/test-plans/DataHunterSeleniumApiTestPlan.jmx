@@ -16,7 +16,7 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">1</stringProp>
         <stringProp name="ThreadGroup.ramp_time">0</stringProp>
@@ -48,9 +48,9 @@ OUT.println (&quot;------------------------------------------------------------&
             <stringProp name="Argument.value">${__P(DataHunterUrlHostPort,http://localhost:8081)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="IPmaster" elementType="Argument">
-            <stringProp name="Argument.name">IPmaster</stringProp>
-            <stringProp name="Argument.value">${__P(IPMaster,localhostIdRequired)}</stringProp>
+          <elementProp name="pacing" elementType="Argument">
+            <stringProp name="Argument.name">pacing</stringProp>
+            <stringProp name="Argument.value">25 5</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -63,46 +63,91 @@ OUT.println (&quot;------------------------------------------------------------&
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">2</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">25</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(Duration,70)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <JSR223Timer guiclass="TestBeanGUI" testclass="JSR223Timer" testname="Iteration Pacing Timer" enabled="true">
-          <stringProp name="cacheKey">true</stringProp>
+        <BeanShellTimer guiclass="TestBeanGUI" testclass="BeanShellTimer" testname="Iteration Pacing Timer" enabled="true">
           <stringProp name="filename"></stringProp>
-          <stringProp name="parameters">20</stringProp>
+          <stringProp name="parameters">${pacing}</stringProp>
+          <boolProp name="resetInterpreter">false</boolProp>
           <stringProp name="script">// &quot;Iteration Pacing Timer&quot; - a recommended timing option for mark59 
-// Please put your target iteration time (delay + script run time) in seconds in the &quot;Parameters&quot; field above  
+// Please put your target iteration time (delay + script run time) in seconds in the &quot;Parameters&quot; field above, optionally followed by variance in secs eg:  20 5  
+long currentTimeMillis = System.currentTimeMillis(); 
 
-long interation_pacing_ms = Long.valueOf(args[0]) * 1000; 
-long delay = 0;  
-String interation_start_time_ms_str = vars.get(&quot;interation_start_time_ms&quot;);
-//System.out.println(&quot;&gt;&gt;  delay calc - interation_pacing_ms         : &quot; + interation_pacing_ms );
+long interation_pacing_ms  = Long.valueOf(bsh.args[0]) * 1000; 
 
-if (interation_start_time_ms_str != null) {
-
-//  System.out.println(&quot;               - (Prev) interation_start_time : &quot; + interation_start_time_ms_str  + &quot;  -  &quot; + (new Date(Long.valueOf(interation_start_time_ms_str)).toString()) );     
-//  System.out.println(&quot;               - last_delay_ms                : &quot; + Long.valueOf(vars.get(&quot;last_delay_ms&quot;)) ) ;
-//  System.out.println(&quot;               - approx curr                  : &quot; + System.currentTimeMillis() + &quot;  -  &quot; + (new Date(System.currentTimeMillis()).toString()));
-                                                                                                                                
-    delay = interation_pacing_ms + Long.valueOf(interation_start_time_ms_str) + Long.valueOf(vars.get(&quot;last_delay_ms&quot;)) - System.currentTimeMillis();
-
-    if (delay &lt; 0){
-         log.info(&quot;  script execution time exceeded pacing by  : &quot; + (0-delay) + &quot; ms.&quot;  );
-         delay = 0;
-    }
+long interation_variance_ms = 0;
+if (bsh.args.length &gt; 1){
+    interation_variance_ms = Long.valueOf(bsh.args[1]) * 1000;
 }
 
-vars.put(&quot;interation_start_time_ms&quot;, &quot;&quot; + System.currentTimeMillis() );
+long interation_pacing_this_iter_ms = interation_pacing_ms - interation_variance_ms +  (int)( Math.random() * (interation_variance_ms*2 + 1));
+long delay = 0;  
+
+//System.out.println(&quot; &quot;);
+//System.out.println(&quot;&gt;&gt;  pacer parm - interation_pacing_ms         : &quot; + interation_pacing_ms );
+//System.out.println(&quot;          parm - interation_variance_ms       : &quot; + interation_variance_ms );
+//System.out.println(&quot;          calc - interation_pacing_this_iter  : &quot; + interation_pacing_this_iter_ms );
+
+String last_delay_ms_str = vars.get(&quot;last_delay_ms&quot;);
+long last_delay_ms = 0;
+if (last_delay_ms_str != null){
+    last_delay_ms = Long.valueOf(last_delay_ms_str);
+}
+//System.out.println(&quot;               - last_delay_ms                : &quot; + last_delay_ms) ;
+	
+String interation_start_time_ms_str = vars.get(&quot;interation_start_time_ms&quot;);
+
+if ( interation_start_time_ms_str != null ){
+//	System.out.println(&quot;               - (Prev) interation_start_time : &quot; + interation_start_time_ms_str + &quot;  -  &quot; + (new Date(Long.valueOf(interation_start_time_ms_str)).toString()) );     
+                                                                                                                               
+	delay = interation_pacing_this_iter_ms + Long.valueOf(interation_start_time_ms_str) + last_delay_ms - System.currentTimeMillis();
+	if (delay &lt; 0){
+         log.info(&quot;  script execution time exceeded pacing by  : &quot; + (0-delay) + &quot; ms.&quot;  );
+         delay = 0;
+	}
+} else {
+//	System.out.println(&quot;               - (Prev) interation_start_time : &quot; + interation_start_time_ms_str );    
+} 
+
+vars.put(&quot;interation_start_time_ms&quot;, &quot;&quot; + currentTimeMillis );
 vars.put(&quot;last_delay_ms&quot;, &quot;&quot; + delay );
 
-//System.out.println(&quot;    set interation_start_time_ms to : &quot; + vars.get(&quot;interation_start_time_ms&quot;) + &quot;  -  &quot; + (new Date(Long.valueOf(vars.get(&quot;interation_start_time_ms&quot;))).toString()));
+//System.out.println(&quot;          calc - (This) interation_start_time : &quot; + vars.get(&quot;interation_start_time_ms&quot;) + &quot;  -  &quot; + (new Date(Long.valueOf(vars.get(&quot;interation_start_time_ms&quot;))).toString()));
 //System.out.println(&quot;    pausing for calculated delay of &quot; + delay + &quot; ms&quot;  );
-return delay;</stringProp>
-          <stringProp name="scriptLanguage">groovy</stringProp>
-        </JSR223Timer>
+
+Thread.sleep(delay);
+return 0;</stringProp>
+        </BeanShellTimer>
+        <hashTree/>
+        <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="User Parameters" enabled="true">
+          <collectionProp name="UserParameters.names">
+            <stringProp name="3599307">user</stringProp>
+            <stringProp name="-713045828">headlessMode</stringProp>
+          </collectionProp>
+          <collectionProp name="UserParameters.thread_values">
+            <collectionProp name="1788170512">
+              <stringProp name="-1997382182">Mathew</stringProp>
+              <stringProp name="3569038">true</stringProp>
+            </collectionProp>
+            <collectionProp name="-2004359268">
+              <stringProp name="2390765">Mark</stringProp>
+              <stringProp name="3569038">true</stringProp>
+            </collectionProp>
+            <collectionProp name="481484236">
+              <stringProp name="2379971">Luke</stringProp>
+              <stringProp name="3569038">true</stringProp>
+            </collectionProp>
+            <collectionProp name="-1756641887">
+              <stringProp name="2314539">John</stringProp>
+              <stringProp name="3569038">true</stringProp>
+            </collectionProp>
+          </collectionProp>
+          <boolProp name="UserParameters.per_iteration">false</boolProp>
+        </UserParameters>
         <hashTree/>
         <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="DataHunterLifecycle" enabled="true">
           <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
@@ -122,6 +167,11 @@ return delay;</stringProp>
                 <stringProp name="Argument.value">${__P(ForceTxnFailPercent,25)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
+              <elementProp name="USER" elementType="Argument">
+                <stringProp name="Argument.name">USER</stringProp>
+                <stringProp name="Argument.value">${user}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
               <elementProp name="______________________ driver settings: ________________________" elementType="Argument">
                 <stringProp name="Argument.name">______________________ driver settings: ________________________</stringProp>
                 <stringProp name="Argument.value">Refer Mark59 User Guide for details</stringProp>
@@ -134,7 +184,7 @@ return delay;</stringProp>
               </elementProp>
               <elementProp name="HEADLESS_MODE" elementType="Argument">
                 <stringProp name="Argument.name">HEADLESS_MODE</stringProp>
-                <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.value">${headlessMode}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="PAGE_LOAD_STRATEGY" elementType="Argument">
@@ -210,12 +260,27 @@ return delay;</stringProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">2</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">20</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(Duration,70)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
+        <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="User Parameters" enabled="true">
+          <collectionProp name="UserParameters.names">
+            <stringProp name="3599307">user</stringProp>
+          </collectionProp>
+          <collectionProp name="UserParameters.thread_values">
+            <collectionProp name="2078998545">
+              <stringProp name="1556202915">JohnLennon</stringProp>
+            </collectionProp>
+            <collectionProp name="1172557325">
+              <stringProp name="1684097533">PaulMcartney</stringProp>
+            </collectionProp>
+          </collectionProp>
+          <boolProp name="UserParameters.per_iteration">false</boolProp>
+        </UserParameters>
+        <hashTree/>
         <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="DataHunterLifecycleIterator" enabled="true">
           <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments">
@@ -232,6 +297,11 @@ return delay;</stringProp>
               <elementProp name="FORCE_TXN_FAIL_PERCENT" elementType="Argument">
                 <stringProp name="Argument.name">FORCE_TXN_FAIL_PERCENT</stringProp>
                 <stringProp name="Argument.value">${__P(ForceTxnFailPercent,0)}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="USER" elementType="Argument">
+                <stringProp name="Argument.name">USER</stringProp>
+                <stringProp name="Argument.value">${user}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="______________________ interation settings: _____________________" elementType="Argument">

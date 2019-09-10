@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
@@ -296,11 +298,34 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	 * @param threadStartGapMs  time between start of each thread
 	 */
 	protected void runMultiThreadedSeleniumTest(int numberOfThreads, int threadStartGapMs) {
+		runMultiThreadedSeleniumTest(numberOfThreads, threadStartGapMs, new HashMap<String,List<String>>());
+	}
+
+	/**
+	 * Convenience method to directly execute multiple script threads (rather than needing to use Jmeter).  
+	 * @see #runSeleniumTest(KeepBrowserOpen)
+	 * 
+	 * @param numberOfThreads number Of Java Threads
+	 * @param threadStartGapMs  time between start of each thread
+	 */
+	protected void runMultiThreadedSeleniumTest(int numberOfThreads, int threadStartGapMs, Map<String, List<String>>threadParameters) {
 		mockJmeterProperties();
+		Map<String, String> thisThreadParameters = new LinkedHashMap<String,String>();
+		
 		
 		for (int i = 1; i <= numberOfThreads; i++) {
+
+			for (Entry<String, List<String>> entry : threadParameters.entrySet()) {
+				if ( entry.getValue().size() >= i) {
+					thisThreadParameters.put(entry.getKey() , entry.getValue().get(i-1));
+				}
+			}	
+			if (!thisThreadParameters.isEmpty()){
+				LOG.info(" Thread Override Parameters for thread " + String.format("%03d", i) + " : " +  Arrays.toString(thisThreadParameters.entrySet().toArray()));
+			}
 			
-			new Thread(new SeleniumTestThread(this.getClass()), String.format("%03d", i)).start();
+			new Thread(new SeleniumTestThread(this.getClass(), thisThreadParameters), String.format("%03d", i)).start();
+			
 			if (i<numberOfThreads)SafeSleep.sleep(threadStartGapMs);
 		}
 	}
@@ -326,10 +351,13 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 	 */
 	public class SeleniumTestThread implements Runnable {
 
-		private Class<? extends SeleniumAbstractJavaSamplerClient>  testClass;
+		private Class<? extends SeleniumAbstractJavaSamplerClient> testClass;
+		private Map<String, String> thisThreadParametersOverride;  
 
-		public SeleniumTestThread(Class<? extends SeleniumAbstractJavaSamplerClient>  testClass) {
+		
+		public SeleniumTestThread(Class<? extends SeleniumAbstractJavaSamplerClient> testClass, Map<String, String> thisThreadParametersOverride) {
 			this.testClass = testClass;
+			this.thisThreadParametersOverride = thisThreadParametersOverride;
 		}
 
 		public void run() {
@@ -338,7 +366,9 @@ public abstract class SeleniumAbstractJavaSamplerClient  extends AbstractJavaSam
 				testInstance = testClass.newInstance();
 			} catch (Exception e) {	e.printStackTrace(); System.out.println(" Error " + e.getMessage()  ); } 
 			
-			JavaSamplerContext context = new JavaSamplerContext( getDefaultParameters()  );
+			Arguments thisThreadParameterAuguments = Mark59Utils.mergeMapWithAnOverrideMap(getDefaultParameters().getArgumentsAsMap(), thisThreadParametersOverride);
+			
+			JavaSamplerContext context = new JavaSamplerContext( thisThreadParameterAuguments  );
 			
 			testInstance.setupTest(context);
 			testInstance.runTest(context);

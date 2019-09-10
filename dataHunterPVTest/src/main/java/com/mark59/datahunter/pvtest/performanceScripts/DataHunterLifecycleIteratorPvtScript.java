@@ -63,6 +63,7 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 
 	private String application;
 	private String lifecycle;
+	private String user = "default_user";
 	private PolicySelectionCriteria policySelectionCriteria = new PolicySelectionCriteria();
 	private DirectPageGets directPageGets;
 	int forceTxnFailPercent;
@@ -77,7 +78,8 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 		jmeterAdditionalParameters.put(STOP_THREAD_AFTER_TEST_START_IN_SECS,  			 "0");
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_URL_HOST_PORT,  DslConstants.DEFAULT_DATAHUNTER_URL_HOST_PORT);
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_APPLICATION_ID, TestConstants.DATAHUNTER_PV_TEST);
-		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"50");
+		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"20");
+		jmeterAdditionalParameters.put("USER", 	user);
 		jmeterAdditionalParameters.put("DRIVER", "CHROME");
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.HEADLESS_MODE, String.valueOf(false));
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.PAGE_LOAD_STRATEGY, PageLoadStrategy.NORMAL.toString());
@@ -103,6 +105,8 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 //		jm.logPageSourceAtEndOfTransactions(Mark59LogLevels.WRITE );
 //		jm.logPerformanceLogAtEndOfTransactions(Mark59LogLevels.WRITE);
 //		jm.logAllLogsAtEndOfTransactions(Mark59LogLevels.BUFFER);	
+		
+		user = context.getParameter("USER");
 		
 		forceTxnFailPercent = new Integer(context.getParameter(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT).trim());
 		LOG.debug( "forceTxnFailPercent : " + forceTxnFailPercent); 
@@ -151,8 +155,8 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 		checkSqlOk(sqlResultText, deleteMultiplePoliciesActionPage);
 		jm.endTransaction("DH-lifecycle-0100-deleteMultiplePolicies");	
 		
-// 		add some policies
-		Policies policy = new Policies(application, null, lifecycle, DslConstants.UNUSED, "", 0L);
+// 		add some policies (put the user in 'otherdata') 
+		Policies policy = new Policies(application, null, lifecycle, DslConstants.UNUSED, user, 0L);
 		AddPolicyActionPage addPolicyActionPage;
 		directPageGets.gotoAddPolicyPage();
 		AddPolicyPage addPolicyPage = new AddPolicyPage(driver);
@@ -166,6 +170,9 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 			addPolicyPage.useability.selectByVisibleText(policy.getUseability());
 			addPolicyPage.otherdata.type(policy.getOtherdata());		
 			addPolicyPage.epochtime.type(policy.getEpochtime().toString());
+			
+			// uncomment to see all the policies being created:
+			//jm.writeScreenshot("add_policy_" + policy.getIdentifier());			
 			
 			jm.startTransaction("DH-lifecycle-0200-addPolicy");
 			addPolicyPage.submit.submit();	
@@ -327,16 +334,29 @@ public class DataHunterLifecycleIteratorPvtScript  extends SeleniumIteratorAbstr
 
 	
 	/**
-	 * A main method to assist with script testing outside Jmeter.
+	 * A main method to assist with script testing outside Jmeter.  The samples below demonstrate three ways of running the script: <br><br>
+	 * 1.  Run a simple single instance, without extra thread-based parameterization (KeepBrowserOpen enumeration is optionally available).<br>
+	 * 2.  Run multiple instances of the script, without extra thread-based parameterization <br> 
+	 * 3.  Run multiple instances of the script, with extra thread-based parameterization, represented as a map with parameter name as key, and values for each instance to be executed<br>  
+	 * 
 	 * For logging details see @Log4jConfigurationHelper 
 	 */
 	public static void main(String[] args) throws InterruptedException{
 		Log4jConfigurationHelper.init(Level.INFO) ;
 
 		DataHunterLifecycleIteratorPvtScript thisTest = new DataHunterLifecycleIteratorPvtScript();
-		thisTest.runSeleniumTest(KeepBrowserOpen.ONFAILURE);
-//		thisTest.runMultiThreadedSeleniumTest(3, 9000);
-	}
 
+		//1: single
+		thisTest.runSeleniumTest(KeepBrowserOpen.ONFAILURE);
+		
+		//2: multi-thread
+//		thisTest.runMultiThreadedSeleniumTest(2, 2000);
+
+		//3: multi-thread with parms
+//		Map<String, java.util.List<String>>threadParameters = new java.util.LinkedHashMap<String,java.util.List<String>>();
+//		threadParameters.put("USER",                              java.util.Arrays.asList( "USER-MATTHEW", "USER-MARK", "USER-LUKE", "USER-JOHN"));
+//		threadParameters.put(SeleniumDriverFactory.HEADLESS_MODE, java.util.Arrays.asList( "true"        , "false"    , "true"     , "true"));		
+//		thisTest.runMultiThreadedSeleniumTest(4, 2000, threadParameters);
+	}
 		
 }

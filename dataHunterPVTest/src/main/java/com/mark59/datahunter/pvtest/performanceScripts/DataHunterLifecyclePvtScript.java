@@ -67,7 +67,8 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 		Map<String, String> jmeterAdditionalParameters = new LinkedHashMap<String, String>();
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_URL_HOST_PORT,  DslConstants.DEFAULT_DATAHUNTER_URL_HOST_PORT);
 		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_DATAHUNTER_APPLICATION_ID, TestConstants.DATAHUNTER_PV_TEST);
-		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"50");
+		jmeterAdditionalParameters.put(TestConstants.PARM_NAME_FORCE_TXN_FAIL_PERCENT, 	"20");
+		jmeterAdditionalParameters.put("USER", 	"default_user");		
 		jmeterAdditionalParameters.put("DRIVER", "CHROME");
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.HEADLESS_MODE, String.valueOf(false));
 		jmeterAdditionalParameters.put(SeleniumDriverFactory.PAGE_LOAD_STRATEGY, PageLoadStrategy.NORMAL.toString());
@@ -81,7 +82,7 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 	/* 
 	 * This selenium test uses a style of DSL which we suggest would be suitable for most performance tests. 
 	 * Element waits and identification will become complex on more difficult applications, but the general elements-within-pages structure should still work.
-	 * Although not necessary, the 'Link' elements in this DSL uses a wait condition from the Mark59 SuperPageElement jsut to demonstrate,
+	 * Although not necessary, the 'Link' elements in this DSL uses a wait condition from the Mark59 SuperPageElement just to demonstrate,
 	 * and this test shows a usage of it when adding policies.  
 	 */
 	@Override
@@ -94,6 +95,8 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 //		jm.logPerformanceLogAtEndOfTransactions(Mark59LogLevels.WRITE);
 //		jm.logAllLogsAtEndOfTransactions(Mark59LogLevels.BUFFER);		
 
+		String user = context.getParameter("USER");
+		
 		String thread = Thread.currentThread().getName();
 		String lifecycle = "thread_" + thread;
 //		System.out.println("Thread " + thread + " is running with LOG level " + LOG.getLevel());
@@ -124,8 +127,8 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 		jm.endTransaction("DH-lifecycle-0100-deleteMultiplePolicies");	
 		
 		
-// 		add some policies
-		Policies policy = new Policies(application, null, lifecycle, DslConstants.UNUSED, "", 0L);
+// 		add some policies (put the user in 'otherdata') 
+		Policies policy = new Policies(application, null, lifecycle, DslConstants.UNUSED, user, 0L);
 		AddPolicyActionPage addPolicyActionPage;
 		directPageGets.gotoAddPolicyPage();
 		AddPolicyPage addPolicyPage = new AddPolicyPage(driver);
@@ -139,6 +142,9 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 			addPolicyPage.useability.selectByVisibleText(policy.getUseability());
 			addPolicyPage.otherdata.type(policy.getOtherdata());		
 			addPolicyPage.epochtime.type(policy.getEpochtime().toString());
+			
+			// uncomment to see all the policies being created:
+			//jm.writeScreenshot("add_policy_" + policy.getIdentifier());
 			
 			jm.startTransaction("DH-lifecycle-0200-addPolicy");
 			addPolicyPage.submit.submit();	
@@ -155,7 +161,7 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 		} 
 		
 	
-//		dummy transaction just to trest transaction failure behaviour 		
+//		dummy transaction just to trest transaction failure behavior 		
 		jm.startTransaction("DH-lifecycle-0299-sometimes-I-fail");
 		int randomNum_1_to_100 = ThreadLocalRandom.current().nextInt(1, 101);
 		if ( randomNum_1_to_100 >= forceTxnFailPercent ) {
@@ -285,15 +291,28 @@ public class DataHunterLifecyclePvtScript  extends SeleniumAbstractJavaSamplerCl
 
 	
 	/**
-	 * A main method to assist with script testing outside Jmeter.
+	 * A main method to assist with script testing outside Jmeter.  The samples below demonstrate three ways of running the script: <br><br>
+	 * 1.  Run a simple single instance, without extra thread-based parameterization (KeepBrowserOpen enumeration is optionally available).<br>
+	 * 2.  Run multiple instances of the script, without extra thread-based parameterization <br> 
+	 * 3.  Run multiple instances of the script, with extra thread-based parameterization, represented as a map with parameter name as key, and values for each instance to be executed<br>  
+	 * 
 	 * For logging details see @Log4jConfigurationHelper 
 	 */
 	public static void main(String[] args) throws InterruptedException{
 		Log4jConfigurationHelper.init(Level.INFO) ;
-
 		DataHunterLifecyclePvtScript thisTest = new DataHunterLifecyclePvtScript();
+
+		//1: single
 		thisTest.runSeleniumTest(KeepBrowserOpen.ONFAILURE);
-//		thisTest.runMultiThreadedSeleniumTest(8, 1000);
+		
+		//2: multi-thread
+//		thisTest.runMultiThreadedSeleniumTest(2, 2000);
+
+		//3: multi-thread with parms
+//		Map<String, java.util.List<String>>threadParameters = new java.util.LinkedHashMap<String,java.util.List<String>>();
+//		threadParameters.put("USER",                              java.util.Arrays.asList( "USER-MATTHEW", "USER-MARK", "USER-LUKE", "USER-JOHN"));
+//		threadParameters.put(SeleniumDriverFactory.HEADLESS_MODE, java.util.Arrays.asList( "true"        , "false"    , "true"     , "true"));		
+//		thisTest.runMultiThreadedSeleniumTest(4, 2000, threadParameters);
 	}
 
 		
