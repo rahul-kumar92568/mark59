@@ -13,7 +13,7 @@ REM   See the License for the specific language governing permissions and
 REM   limitations under the License.
 REM 
 REM   -------------------------------------------------------------------------------------------------------------------------------------------------
-REM   |  Use this file to copy artifacts from  Eclipse build target after Maven builds have been executed on the dataHunterPVtest and metricsRunchek projects 
+REM   |  Use this file to copy artifacts from  Eclipse build target after Maven builds have been executed on the dataHunterPVtest and mark59-server-metrics projects 
 REM   | 
 REM   |  Sample Usage.
 REM   |  ------------
